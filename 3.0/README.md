@@ -1,96 +1,174 @@
-# 基于AVPlayer播放格式化音频（ArkTS）
+# 3.0 版本新增功能说明
 
-## 项目简介
-本场景解决方案主要面向前台音频开发人员。指导开发者基于AVPlayer开发音频播放功能，AVPlayer用于播放格式化音频（MP3、WAV、FLAC等）。功能包括后台播放、和播控中心的交互、适配不同类型的焦点打断策略、切换输出设备、倍数播放、音量调节等基础音频常见功能。
+## 概述
 
-## 使用说明
-1. 播放功能：运行工程，进入首页后，点击底部播放按钮，可播放音乐。
-2. 切歌功能：播放按钮两侧有切歌按钮，点击切换上一首下一首。
-3. 进度跳转功能：推动播放按钮上面的播放条，可以调整歌曲进度。
-4. 循环模式：点击进度条上部，左侧第一个图标，可以切换不同播放模式，支持的模式有“顺序播放”、“单曲循环”、“随机播放”。
-5. 歌单列表：点击进度条上部，左侧第二个图标，可以打开歌曲列表，点击歌曲名称，可以切换播放歌曲。
-6. 静音播放：点击进度条上部，左侧第三个图标，可以打开静音播放功能。
-7. 倍数设置：点击进度条上部，左侧第四个图标，可以调整歌曲播放速度。
-8. 音量设置：点击进度条上部，左侧第五个图标，可以调整歌曲播放音量。
-9. 收藏：点击页面“爱心”图标，将歌曲变成已收藏状态，可以同步至播控中心。
+本版本（3.0）在原有 2.0 版本基础上，新增了**大小屏自适应布局**和**自由流转（分布式协同）**两大核心功能，使应用能够适配手机、平板、2合1设备等多种终端，并支持在不同鸿蒙设备间无缝迁移播放状态。
 
-## 效果预览
+---
 
-| 主页面                                                | 歌词页                                                | 歌单列表                                                  | 倍数设置                                               |
-|----------------------------------------------------|----------------------------------------------------|-------------------------------------------------------|----------------------------------------------------|
-| <img src="screenshots/device/index.png" width=320> | <img src="screenshots/device/lyric.png" width=320> | <img src="screenshots/device/songList.png" width=320> | <img src="screenshots/device/speed.png" width=320> |
+## 一、大小屏自适应布局
 
-## 工程目录
-```
-├──entry/src/main/ets/
-│  ├──common
-│  │  ├──constants                                        // 常量
-│  │  │  ├──BreakpointConstants.ets                       // 断点常量
-│  │  │  ├──ContentConstants.ets                          // 内容常量
-│  │  │  ├──LyricConst.ets                                // 歌词常量
-│  │  │  ├──PlayerConstants.ets                           // 播放常量
-│  │  │  └──StyleConstants.ets                            // 顶部区域组件
-│  │  └──utils                                            // 工具函数
-│  │     ├──mediautils                                    // 媒体方法
-│  │     │  ├──AVPlayerController.ets                     // AVPlayerController播放类
-│  │     │  ├──AVSessionController.ets                    // 播控中心控制类
-│  │     │  ├──MediaControlCenter.ets                     // 媒体控制中心类
-│  │     │  ├──MediaControlCenterCallbackAction.ets       // 媒体控制中心回调函数响应类
-│  │     │  ├──MediaControlCenterHandle.ets               // 媒体控制中心句柄类
-│  │     │  └──MediaTools.ets                             // 媒体工具处理类
-│  │     ├──BackgroundUtil                                // 后台任务类
-│  │     ├──BreakpointSystem                              // 断点系统类
-│  │     ├──ColorConversion                               // 颜色转换类
-│  │     ├──Logger                                        // 日志类
-│  │     ├──LrcUtils                                      // 歌词工具类
-│  │     ├──PreferencesUtil                               // 首选项工具类
-│  │     └──ResourceConversion.ets                        // 资源工具类
-│  ├──components                                          // 组件
-│  │  └──CustomButton.ets                                 // 公共按钮
-│  ├──entryability
-│  │  ├──EntryAbility.ets                                 // Ability的生命周期回调内容
-│  │  └──InsightIntentExecutorImpl.ets                    // 意图框架回调内容
-│  ├──entrybackupability
-│  │  └──EntryBackupAbility.ets                           // EntryBackupAbility的生命周期回调内容
-│  ├──model
-│  │  └──SongListData.ets                                 // 歌单列表数据
-│  ├──pages
-│  │  └──Index.ets                                        // 首页
-│  ├──view
-│  │  ├──ControlAreaComponent.ets                         // 控制区域组件
-│  │  ├──LrcView.ets                                      // 歌词显示组件
-│  │  ├──LyricsComponent.ets                              // 歌词组件
-│  │  ├──MusicInfoComponent.ets                           // 音乐详情组件
-│  │  └──PlayerInfoComponent.ets                          // 播放详情组件
-│  └──viewmodel
-│     ├──LrcEntry.ets                                     // 歌词数据类型
-│     ├──SongData.ets                                     // 歌曲基础数据类型
-│     ├──SongDataSource.ets                               // 歌曲列表数据源
-│     └──SongItemBuilder.ets                              // 歌曲列表数据构造
-└──entry/src/main/resources                               // 应用静态资源目录
+### 功能描述
+
+应用通过监听窗口尺寸变化，自动识别当前设备类型（手机/平板/2合1），并动态切换为对应的响应式布局，确保在不同尺寸的屏幕上都能提供最佳的用户体验。
+
+### 实现原理
+
+- 使用 `BreakpointSystem` 工具类监听窗口宽度变化
+- 定义三个断点（Breakpoint）：
+  - **SM（Small）**：宽度 < 600vp，对应手机竖屏
+  - **MD（Medium）**：宽度 600vp ~ 840vp，对应平板横屏 / 2合1 中等窗口
+  - **LG（Large）**：宽度 ≥ 840vp，对应大屏 / PC / 折叠屏全展开
+- 在 `PlayerInfoComponent` 中根据当前断点动态渲染不同布局
+
+### 布局对照
+
+| 断点 | 设备场景 | 布局方式 |
+|---|---|---|
+| SM | 手机竖屏 | 单列 Swiper 滑动切换（封面页 ↔ 歌词页） |
+| MD | 平板横屏 / 2合1 | **双栏布局**：左4列封面+控制区，右4列歌词 |
+| LG | 大屏 / PC / 折叠屏 | **双栏布局**：左4列封面+控制区，右6列歌词（更宽松） |
+
+### 适配的设备类型
+
+在 `module.json5` 中声明支持以下设备：
+
+```json5
+"deviceTypes": [
+  "phone",
+  "tablet",
+  "2in1"
+]
 ```
 
-## 具体实现
-1. 播放功能：本文使用AVPlayer接口实现音频播放功能。从rawfile目录下获取音频文件后，通过AVPlayerController接口实现播放功能。
-2. 倍速、音量、静音模式功能调用的是AVPlayer自身的接口，详细接口使用可见具体代码。
-3. 循环模式和收藏模式的状态切换，依赖本地数据和AVSession交互，达到应用内界面和播控中心状态的同步。
+### 涉及修改的文件
 
+| 文件 | 修改内容 |
+|---|---|
+| `entry/src/main/module.json5` | 扩展 `deviceTypes`，新增 `tablet` 和 `2in1` |
+| `entry/src/main/ets/view/PlayerInfoComponent.ets` | 新增 MD 断点分支，实现双栏布局 |
+| `entry/src/main/ets/common/utils/BreakpointSystem.ets` | （已有）断点监听工具类 |
+| `entry/src/main/ets/common/constants/BreakpointConstants.ets` | （已有）断点常量定义 |
 
-## 相关权限
-1. 后台任务权限：ohos.permission.KEEP_BACKGROUND_RUNNING。
+---
 
-## 依赖
-不涉及
+## 二、自由流转（分布式协同迁移）
 
-## 约束与限制
-1. 本示例仅支持标准系统上运行，支持设备：直板机。
-2. HarmonyOS系统：HarmonyOS 6.0.0 Release Release及以上。
-3. DevEco Studio版本：DevEco Studio 6.0.0 Release及以上。
-4. HarmonyOS SDK版本：HarmonyOS 6.0.0 Release SDK及以上。
+### 功能描述
 
+自由流转允许用户在一台鸿蒙设备上开始播放音乐后，通过系统级的"流转"入口，将应用状态**无缝迁移**到另一台鸿蒙设备上继续播放，无需手动记录进度或重新操作。
 
+### 使用场景
 
+- 手机上听歌，走到平板前，一键流转到平板继续播放
+- 平板上看歌词，切换到台式机（2合1），自动恢复播放状态和进度
 
+### 实现原理
 
+利用鸿蒙 Ability 的 `onContinue` 生命周期回调，在应用迁移时保存关键状态数据，在目标设备上通过 `onCreate` 或 `onNewWant` 恢复状态。
 
+#### 关键生命周期
 
+| 生命周期 | 触发时机 | 作用 |
+|---|---|---|
+| `onContinue(wantParam)` | 源端同意迁移时 | 将播放状态写入 `wantParam`，供目标端恢复 |
+| `onCreate(want, launchParam)` | 目标端冷启动时 | 检测是否为流转启动（`LaunchReason.CONTINUATION`），恢复状态 |
+| `onNewWant(want)` | 目标端应用已运行时 | 直接接收流转数据，恢复状态 |
+
+#### 迁移数据
+
+| 数据项 | 说明 |
+|---|---|
+| `selectIndex` | 当前播放歌曲索引 |
+| `progress` | 当前播放进度（毫秒） |
+| `playMode` | 当前播放模式（顺序/单曲循环/随机） |
+
+### 配置要求
+
+在 `module.json5` 中声明 Ability 支持流转：
+
+```json5
+"abilities": [
+  {
+    "name": "EntryAbility",
+    "continuable": true,
+    // ...
+  }
+]
+```
+
+### 前置条件
+
+- 源设备和目标设备登录**同一华为账号**
+- 两台设备均开启 **Wi-Fi** 和 **蓝牙**
+- 系统版本 ≥ **HarmonyOS API 9**
+- 在系统设置中开启**多设备协同 / 自由流转**开关
+
+### 涉及修改的文件
+
+| 文件 | 修改内容 |
+|---|---|
+| `entry/src/main/module.json5` | 添加 `"continuable": true` |
+| `entry/src/main/ets/entryability/EntryAbility.ets` | 实现 `onContinue`、`onNewWant`、`restoreContinuationState` |
+
+---
+
+## 三、编译与运行
+
+### 编译环境
+
+- **DevEco Studio**：6.0.0 Release 及以上
+- **HarmonyOS SDK**：HarmonyOS 6.0.0 Release SDK 及以上
+- **编译注意**：ArkTS 严格模式下禁止使用 `any`/`unknown` 类型，所有 `JSON.parse` 返回值需显式标注类型
+
+### 运行设备
+
+- 手机模拟器 / 真机
+- 平板模拟器 / 真机（验证 MD 断点双栏布局）
+- 2合1 设备模拟器 / 真机（验证 LG 断点布局）
+- 两台鸿蒙设备（验证自由流转）
+
+### 验证方法
+
+#### 大小屏适配验证
+
+1. 在 DevEco Studio 中打开 `Index.ets`
+2. 使用 **Previewer** 预览器，切换不同设备（Phone / Tablet / 2in1）
+3. 观察布局是否自动切换为单栏 / 双栏
+
+或在虚拟机中运行后，**拖拽窗口边缘**改变宽度，观察布局实时变化。
+
+#### 自由流转验证
+
+1. 在设备 A 上启动应用并播放音乐（记录当前进度）
+2. 从系统控制中心或最近任务中，点击**流转**按钮
+3. 选择设备 B
+4. 设备 B 自动启动应用，恢复到设备 A 的播放状态和进度
+
+---
+
+## 四、与 2.0 版本对比
+
+| 功能 | 2.0 版本 | 3.0 版本 |
+|---|---|---|
+| 设备支持 | 仅手机（phone） | 手机 + 平板 + 2合1 |
+| 布局适配 | 仅手机竖屏单列布局 | 响应式三断点布局（SM/MD/LG） |
+| 自由流转 | 不支持 | 支持（跨设备状态迁移） |
+| `module.json5` | `deviceTypes: ["phone"]` | `deviceTypes: ["phone","tablet","2in1"]` + `continuable: true` |
+
+---
+
+## 五、已知问题与限制
+
+1. **模拟器限制**：DevEco Studio 模拟器可能不支持完整的分布式协同能力（无真实蓝牙硬件），自由流转建议在真机上验证。
+2. **ArkTS 严格模式**：`JSON.parse` 返回值必须显式标注类型，否则编译报错（`arkts-no-any-unknown`）。
+3. **账号依赖**：自由流转要求源设备和目标设备登录同一华为账号，且系统版本 ≥ API 9。
+
+---
+
+## 六、未来规划
+
+- [ ] 支持更多断点（如折叠屏特殊形态）
+- [ ] 优化 MD/LG 断点下的歌词显示效果
+- [ ] 支持播控中心的跨设备同步
+- [ ] 适配更多设备形态（车载、智慧屏等）
