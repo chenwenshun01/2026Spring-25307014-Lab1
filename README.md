@@ -1,10 +1,14 @@
 # HarmonyOS Music Player Labs
 
-This repository contains two versions of the HarmonyOS ArkTS music player project.
+This repository contains three versions of the HarmonyOS ArkTS music player project.
 
-## 2.0 - Original Version
+## 1.0 - Original Version
 
-The original base project located in the `2.0/` folder.
+The earliest base project located in the `1.0/` folder.
+
+## 2.0 - Updated Base Version
+
+The updated base project located in the `2.0/` folder.
 
 ## 3.0 - Responsive & Distributed Version
 
@@ -16,5 +20,5 @@ The enhanced version located in the `3.0/` folder, featuring:
 ## How to Use
 
 1. Open DevEco Studio.
-2. Choose either `2.0/` or `3.0/` folder as the project root.
+2. Choose either `1.0/`, `2.0/`, or `3.0/` folder as the project root.
 3. Sync dependencies and run on a HarmonyOS device or emulator.
