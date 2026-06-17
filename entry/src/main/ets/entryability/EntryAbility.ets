@@ -20,6 +20,14 @@ import { BreakpointConstants } from '../common/constants/BreakpointConstants';
 
 const DOMAIN = 0x0000;
 
+/**
+ * 自由流转数据键常量
+ * 用于在迁移时保存和恢复播放状态
+ */
+const CONTINUATION_KEY_SELECT_INDEX = 'selectIndex';
+const CONTINUATION_KEY_PROGRESS = 'progress';
+const CONTINUATION_KEY_PLAY_MODE = 'playMode';
+
 export default class EntryAbility extends UIAbility {
   private windowObj?: window.Window;
 
@@ -31,6 +39,82 @@ export default class EntryAbility extends UIAbility {
       hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
     }
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+
+    // ===== 自由流转：恢复迁移数据 =====
+    if (launchParam.launchReason === AbilityConstant.LaunchReason.CONTINUATION) {
+      hilog.info(DOMAIN, 'testTag', 'Launched by continuation, restoring state...');
+      this.restoreContinuationState(want);
+    }
+  }
+
+  /**
+   * 自由流转：当本设备作为源端，系统调用此方法收集迁移数据
+   * 返回 AGREE 表示同意迁移，同时把当前播放状态写入 wantParam
+   */
+  onContinue(wantParam: Record<string, Object>): AbilityConstant.OnContinueResult {
+    hilog.info(DOMAIN, 'testTag', 'onContinue called, saving playback state...');
+    try {
+      // 读取当前播放状态（AppStorage 中的值）
+      const selectIndex: number = AppStorage.get<number>('selectIndex') ?? 0;
+      const progress: number = AppStorage.get<number>('progress') ?? 0;
+      const playMode: number = AppStorage.get<number>('playMode') ?? 0;
+      const playModeStr: string = JSON.stringify(playMode);
+
+      wantParam[CONTINUATION_KEY_SELECT_INDEX] = selectIndex;
+      wantParam[CONTINUATION_KEY_PROGRESS] = progress;
+      wantParam[CONTINUATION_KEY_PLAY_MODE] = playModeStr;
+
+      hilog.info(DOMAIN, 'testTag',
+        `Continuation data saved: selectIndex=${selectIndex}, progress=${progress}`);
+    } catch (err) {
+      hilog.error(DOMAIN, 'testTag', 'Failed to save continuation state: %{public}s', JSON.stringify(err));
+    }
+    return AbilityConstant.OnContinueResult.AGREE;
+  }
+
+  /**
+   * 自由流转：当本设备作为目标端，应用重新启动并恢复状态
+   * 系统会再次调用 onCreate 并传入 CONTINUATION 类型的 launchParam
+   * 同时也可能调用 onNewWant（如应用已在运行）
+   */
+  onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    hilog.info(DOMAIN, 'testTag', 'onNewWant called, launchReason: %{public}d', launchParam.launchReason);
+    if (launchParam.launchReason === AbilityConstant.LaunchReason.CONTINUATION) {
+      this.restoreContinuationState(want);
+    }
+  }
+
+  /**
+   * 从 Want 的参数中恢复播放状态到 AppStorage
+   */
+  private restoreContinuationState(want: Want): void {
+    try {
+      const params = want.parameters;
+      if (!params) {
+        return;
+      }
+      if (params[CONTINUATION_KEY_SELECT_INDEX] !== undefined) {
+        const idx = params[CONTINUATION_KEY_SELECT_INDEX] as number;
+        AppStorage.setOrCreate<number>('selectIndex', idx);
+        hilog.info(DOMAIN, 'testTag', `Restored selectIndex: ${idx}`);
+      }
+      if (params[CONTINUATION_KEY_PROGRESS] !== undefined) {
+        const prog = params[CONTINUATION_KEY_PROGRESS] as number;
+        AppStorage.setOrCreate<number>('progress', prog);
+        hilog.info(DOMAIN, 'testTag', `Restored progress: ${prog}`);
+      }
+      if (params[CONTINUATION_KEY_PLAY_MODE] !== undefined) {
+        try {
+          const playModeStr = params[CONTINUATION_KEY_PLAY_MODE] as string;
+          const playMode: number = JSON.parse(playModeStr) as number;
+          AppStorage.setOrCreate<number>('playMode', playMode);
+        } catch (e) {
+          hilog.warn(DOMAIN, 'testTag', 'Failed to parse playMode, using default');
+        }
+      }
+    } catch (err) {
+      hilog.error(DOMAIN, 'testTag', 'Failed to restore continuation state: %{public}s', JSON.stringify(err));
+    }
   }
 
   onDestroy(): void {

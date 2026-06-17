@@ -97,6 +97,7 @@ export struct PlayerInfoComponent {
         .opacity(0.5)
       Row() {
         if (this.isFoldFull) {
+          // ===== 折叠屏全展开：左封面 + 右歌词 两栏 =====
           Column() {
             GridRow({
               columns: { md: BreakpointConstants.COLUMN_MD },
@@ -132,6 +133,7 @@ export struct PlayerInfoComponent {
             right: $r('app.float.common_padding')
           })
         } else if (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_LG) {
+          // ===== 大屏（LG）：封面+控制 左栏，歌词 右栏 =====
           Column() {
             GridRow({
               columns: { md: BreakpointConstants.COLUMN_MD, lg: BreakpointConstants.COLUMN_LG },
@@ -170,7 +172,60 @@ export struct PlayerInfoComponent {
               bottom: $r('app.float.lg_music_margin_bottom')
             })
           }
+        } else if (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_MD) {
+          // ===== 中屏（MD）：平板横屏/2in1 窗口中等尺寸，左封面+控制，右歌词 =====
+          Column() {
+            GridRow({
+              columns: { md: BreakpointConstants.COLUMN_MD },
+              gutter: BreakpointConstants.GUTTER_MUSIC_X
+            }) {
+              // 左栏：封面 + 歌曲信息 + 控制区（MD 8列，左右各4列）
+              GridCol({
+                span: { md: BreakpointConstants.SPAN_SM }
+              }) {
+                Column() {
+                  Image(this.songList[this.selectIndex].label)
+                    .width(StyleConstants.FULL_WIDTH)
+                    .aspectRatio(1)
+                    .borderRadius($r('app.float.cover_radius'))
+                    .shadow({
+                      radius: $r('app.float.shadow_radius'),
+                      color: $r('app.color.shadow_color'),
+                      offsetX: 0,
+                      offsetY: 8
+                    })
+                  ControlAreaComponent()
+                    .margin({
+                      top: $r('app.float.music_info_margin_top')
+                    })
+                }
+                .height(StyleConstants.FULL_HEIGHT)
+                .justifyContent(FlexAlign.SpaceBetween)
+                .margin({
+                  bottom: $r('app.float.common_margin')
+                })
+              }
+
+              // 右栏：歌词（4列）
+              GridCol({
+                span: { md: BreakpointConstants.SPAN_SM }
+              }) {
+                LyricsComponent({ isShowControl: this.isShowControlLg, isTablet: this.isTablet })
+              }
+              .padding({
+                left: $r('app.float.twenty_four')
+              })
+            }
+            .layoutWeight(1)
+            .padding({
+              left: $r('app.float.common_padding'),
+              right: $r('app.float.common_padding'),
+              top: $r('app.float.lg_music_top'),
+              bottom: $r('app.float.lg_music_margin_bottom')
+            })
+          }
         } else {
+          // ===== 小屏（SM）：手机竖屏，Swiper 左右滑动切换封面/歌词 =====
           Stack({ alignContent: Alignment.TopStart }) {
             Swiper() {
               MusicInfoComponent()
