@@ -1,24 +1,34 @@
-# HarmonyOS Music Player Labs
+# 鸿蒙音乐播放器实验项目
 
-This repository contains three versions of the HarmonyOS ArkTS music player project.
+本仓库包含基于鸿蒙 ArkTS 开发的音乐播放器项目的三个版本。
 
-## 1.0 - Original Version
+## 1.0 — 原始版本
 
-The earliest base project located in the `1.0/` folder.
+最初的基础项目，位于 `1.0/` 文件夹。
 
-## 2.0 - Updated Base Version
+## 2.0 — 更新基础版本
 
-The updated base project located in the `2.0/` folder.
+在 1.0 基础上更新的版本，位于 `2.0/` 文件夹。
 
-## 3.0 - Responsive & Distributed Version
+## 3.0 — 响应式适配 + 自由流转版本
 
-The enhanced version located in the `3.0/` folder, featuring:
+在 2.0 基础上增强的版本，位于 `3.0/` 文件夹，新增功能：
 
-- **Large/Small Screen Adaptation**: supports phone, tablet, and 2-in-1 devices using breakpoint-based responsive layouts (SM / MD / LG).
-- **Free Flow / Distributed Continuation**: saves and restores playback state (`selectIndex`, `progress`, `playMode`) across devices via `onContinue` / `onNewWant` lifecycle hooks.
+- **大小屏自适应布局**：支持手机、平板、2合1 等多种设备，基于断点（SM / MD / LG）自动切换布局
+- **自由流转（分布式协同）**：通过 `onContinue` / `onNewWant` 生命周期，在设备间无缝迁移播放状态（当前歌曲、播放进度、播放模式）
 
-## How to Use
+详见 `3.0/README.md`。
 
-1. Open DevEco Studio.
-2. Choose either `1.0/`, `2.0/`, or `3.0/` folder as the project root.
-3. Sync dependencies and run on a HarmonyOS device or emulator.
+## 演示资源
+
+演示截图和录屏文件位于 `docs/` 文件夹：
+
+- `docs/Screenshots/` — 大小屏适配功能演示截图
+- `docs/videos/` — 功能演示录屏
+- `docs/engineering_files/` — 工程描述文件
+
+## 使用方法
+
+1. 打开 DevEco Studio
+2. 选择 `1.0/`、`2.0/` 或 `3.0/` 文件夹作为项目根目录
+3. 同步依赖，连接鸿蒙设备或模拟器后运行
